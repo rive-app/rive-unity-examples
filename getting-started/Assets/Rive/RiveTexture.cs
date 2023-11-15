@@ -55,9 +55,57 @@ namespace Rive
 
         private void Update()
         {
+
+            HitTesting();
+
             if (m_stateMachine != null)
             {
                 m_stateMachine.advance(Time.deltaTime);
+            }
+        }
+
+        bool m_wasMouseDown = false;
+        private Vector2 m_lastMousePosition;
+
+        void HitTesting()
+        {
+            Camera camera = Camera.main;
+
+            if (camera == null || renderTexture == null || m_artboard == null) return;
+
+            if (!Physics.Raycast(camera.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
+                return;
+
+            Renderer rend = hit.transform.GetComponent<Renderer>();
+            MeshCollider meshCollider = hit.collider as MeshCollider;
+
+            if (rend == null || rend.sharedMaterial == null || rend.sharedMaterial.mainTexture == null || meshCollider == null)
+                return;
+
+            Vector2 pixelUV = hit.textureCoord;
+
+            pixelUV.x *= renderTexture.width;
+            pixelUV.y *= renderTexture.height;
+
+            Vector3 mousePos = camera.ScreenToViewportPoint(Input.mousePosition);
+            Vector2 mouseRiveScreenPos = new(mousePos.x * camera.pixelWidth, (1 - mousePos.y) * camera.pixelHeight);
+
+            if (m_lastMousePosition != mouseRiveScreenPos || transform.hasChanged)
+            {
+                Vector2 local = m_artboard.localCoordinate(pixelUV, new Rect(0, 0, renderTexture.width, renderTexture.height), fit, alignment);
+                m_stateMachine?.pointerMove(local);
+                m_lastMousePosition = mouseRiveScreenPos;
+            }
+            if (Input.GetMouseButtonDown(0))
+            {
+                Vector2 local = m_artboard.localCoordinate(pixelUV, new Rect(0, 0, renderTexture.width, renderTexture.height), fit, alignment);
+                m_stateMachine?.pointerDown(local);
+                m_wasMouseDown = true;
+            }
+            else if (m_wasMouseDown)
+            {
+                m_wasMouseDown = false; Vector2 local = m_artboard.localCoordinate(mouseRiveScreenPos, new Rect(0, 0, renderTexture.width, renderTexture.height), fit, alignment);
+                m_stateMachine?.pointerUp(local);
             }
         }
 
