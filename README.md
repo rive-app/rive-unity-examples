@@ -1,6 +1,6 @@
 # Rive Unity Examples
 
-![Rive hero image](https://cdn.rive.app/rive_logo_dark_bg.png)
+![rive x unity](https://github.com/rive-app/rive-unity-examples/assets/13705472/e788e5e6-f8fd-47e9-89e2-3119b6ea0a10)
 
 A collection of games and examples using the [Rive Unity package](https://github.com/rive-app/rive-unity/).
 
