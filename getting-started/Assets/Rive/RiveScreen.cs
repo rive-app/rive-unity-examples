@@ -1,8 +1,7 @@
-using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Rendering;
-using UnityEditor;
 
 namespace Rive
 {
@@ -73,9 +72,11 @@ namespace Rive
     public class RiveScreen : MonoBehaviour
     {
         public Rive.Asset asset;
-        public CameraEvent cameraEvent = CameraEvent.BeforeImageEffects;
+        public CameraEvent cameraEvent = CameraEvent.AfterEverything;
         public Fit fit = Fit.contain;
         public Alignment alignment = Alignment.center;
+        public event RiveEventDelegate OnRiveEvent;
+        public delegate void RiveEventDelegate(ReportedEvent reportedEvent);
 
         private RenderQueue m_renderQueue;
         private CommandBuffer m_commandBuffer;
@@ -86,6 +87,8 @@ namespace Rive
         private CameraTextureHelper m_helper;
 
         public Material material;
+
+        public StateMachine stateMachine => m_stateMachine;
 
         private static bool flipY()
         {
@@ -117,7 +120,7 @@ namespace Rive
             }
         }
 
-        private void Start()
+        private void Awake()
         {
             if (asset != null)
             {
@@ -192,6 +195,13 @@ namespace Rive
                     m_stateMachine?.pointerUp(local);
                 }
             }
+
+            // Find reported Rive events before calling advance.
+            foreach (var report in m_stateMachine?.reportedEvents() ?? Enumerable.Empty<ReportedEvent>())
+            {
+                OnRiveEvent?.Invoke(report);
+            }
+
             m_stateMachine?.advance(Time.deltaTime);
         }
 
