@@ -1,11 +1,11 @@
 {
   "dependencies": {
     "app.rive.rive-unity": {
-      "version": "git@github.com:rive-app/rive-unity.git?path=package#v0.1.13",
+      "version": "git@github.com:rive-app/rive-unity.git?path=package#v0.1.38",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "2b75b27d981f2e26df51fd2ca3bc2bb354e8126c"
+      "hash": "1e5735d099c4d3b626f06d529c1b64ce5a981252"
     },
     "com.unity.collab-proxy": {
       "version": "2.2.0",
