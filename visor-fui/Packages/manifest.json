@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "app.rive.rive-unity": "git@github.com:rive-app/rive-unity.git?path=package#v0.1.13",
+    "app.rive.rive-unity": "git@github.com:rive-app/rive-unity.git?path=package#v0.1.38",
     "com.unity.collab-proxy": "2.2.0",
     "com.unity.feature.development": "1.0.1",
     "com.unity.postprocessing": "3.2.2",
