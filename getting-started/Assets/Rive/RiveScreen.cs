@@ -143,7 +143,11 @@ namespace Rive
 
         void drawRive(RenderQueue queue)
         {
-            queue.align(fit, alignment, m_artboard);
+            if (m_artboard == null)
+            {
+                return;
+            }
+            queue.align(fit, alignment ?? Alignment.center, m_artboard);
             queue.draw(m_artboard);
         }
 
@@ -153,6 +157,10 @@ namespace Rive
         private void Update()
         {
             m_helper?.update();
+            if (m_artboard == null)
+            {
+                return;
+            }
             Camera camera = gameObject.GetComponent<Camera>();
             if (camera != null)
             {
@@ -161,7 +169,7 @@ namespace Rive
                     mousePos.x * camera.pixelWidth,
                     (1 - mousePos.y) * camera.pixelHeight
                 );
-                if (m_artboard != null && m_lastMousePosition != mouseRiveScreenPos)
+                if (m_lastMousePosition != mouseRiveScreenPos)
                 {
                     Vector2 local = m_artboard.localCoordinate(
                         mouseRiveScreenPos,
@@ -197,7 +205,9 @@ namespace Rive
             }
 
             // Find reported Rive events before calling advance.
-            foreach (var report in m_stateMachine?.reportedEvents() ?? Enumerable.Empty<ReportedEvent>())
+            foreach (
+                var report in m_stateMachine?.reportedEvents() ?? Enumerable.Empty<ReportedEvent>()
+            )
             {
                 OnRiveEvent?.Invoke(report);
             }
