@@ -26,6 +26,7 @@ public class RiveTexture : MonoBehaviour
              0,
              RenderTextureFormat.ARGB32
          );
+        _renderTexture.enableRandomWrite = true;
 
         Renderer renderer = GetComponent<Renderer>();
         Material material = renderer.material;

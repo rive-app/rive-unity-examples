@@ -131,7 +131,14 @@ namespace Rive
 
             Camera camera = gameObject.GetComponent<Camera>();
             Assert.IsNotNull(camera, "TestRive must be attached to a camera.");
-            m_renderQueue = new RenderQueue();
+            var startingTexture = new RenderTexture(
+                camera.pixelWidth,
+                camera.pixelHeight,
+                0,
+                RenderTextureFormat.ARGB32
+            );
+            startingTexture.enableRandomWrite = true;
+            m_renderQueue = new RenderQueue(startingTexture);
             m_commandBuffer = m_renderQueue.toCommandBuffer();
             camera.AddCommandBuffer(cameraEvent, m_commandBuffer);
             if (!RenderQueue.supportsDrawingToScreen())
