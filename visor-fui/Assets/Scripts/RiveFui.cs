@@ -26,6 +26,7 @@ namespace Rive
 
         private void Start()
         {
+            renderTexture.enableRandomWrite = true;
             m_renderQueue = new RenderQueue(renderTexture);
             if (asset != null)
             {
