@@ -18,11 +18,11 @@ public class MinionLookScript : MonoBehaviour
     {
         var riveTexture = GetComponent<RiveTexture>();
         _riveStateMachine = riveTexture.stateMachine;
-        _lookHorizontalInput = _riveStateMachine.getNumber("track_x");
-        _lookVerticalInput = _riveStateMachine.getNumber("track_y");
+        _lookHorizontalInput = _riveStateMachine.GetNumber("track_x");
+        _lookVerticalInput = _riveStateMachine.GetNumber("track_y");
         float randomTime = Random.Range(0.0f, 4.0f);
-        _riveStateMachine.advance(0.0f);
-        _riveStateMachine.advance(randomTime);
+        _riveStateMachine.Advance(0.0f);
+        _riveStateMachine.Advance(randomTime);
     }
 
     void Update()
@@ -31,8 +31,8 @@ public class MinionLookScript : MonoBehaviour
         directionToCamera.Normalize();
         float xProduct = Vector3.Dot(transform.right, directionToCamera);
         float yProduct = Vector3.Dot(transform.up, directionToCamera);
-        _lookHorizontalInput.value = xProduct * xLookDamp * 100;
-        _lookVerticalInput.value = yProduct * yLookDamp * 100;
+        _lookHorizontalInput.Value = xProduct * xLookDamp * 100;
+        _lookVerticalInput.Value = yProduct * yLookDamp * 100;
 
     }
 }

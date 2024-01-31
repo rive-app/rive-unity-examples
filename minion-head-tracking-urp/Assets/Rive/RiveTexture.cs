@@ -11,6 +11,7 @@ public class RiveTexture : MonoBehaviour
 
     private RenderTexture _renderTexture;
     private Rive.RenderQueue m_renderQueue;
+    private Rive.Renderer m_riveRenderer;
     private CommandBuffer m_commandBuffer;
 
     private File m_file;
@@ -28,37 +29,38 @@ public class RiveTexture : MonoBehaviour
          );
         _renderTexture.enableRandomWrite = true;
 
-        Renderer renderer = GetComponent<Renderer>();
+        UnityEngine.Renderer renderer = GetComponent<UnityEngine.Renderer>();
         Material material = renderer.material;
         material.mainTexture = _renderTexture;
 
         m_renderQueue = new Rive.RenderQueue(_renderTexture);
+        m_riveRenderer = m_renderQueue.Renderer();
         if (asset != null)
         {
-            m_file = Rive.File.load(asset);
-            m_artboard = m_file.artboard(0);
-            m_stateMachine = m_artboard?.stateMachine();
+            m_file = Rive.File.Load(asset);
+            m_artboard = m_file.Artboard(0);
+            m_stateMachine = m_artboard?.StateMachine();
         }
 
         if (m_artboard != null && _renderTexture != null)
         {
-            m_renderQueue.align(fit, Alignment.center, m_artboard);
-            m_renderQueue.draw(m_artboard);
+            m_riveRenderer.Align(fit, Alignment.Center, m_artboard);
+            m_riveRenderer.Draw(m_artboard);
 
             m_commandBuffer = new CommandBuffer();
             // m_renderQueue.toCommandBuffer();
             m_commandBuffer.SetRenderTarget(_renderTexture);
             m_commandBuffer.ClearRenderTarget(true, true, UnityEngine.Color.clear, 0.0f);
-            m_renderQueue.addToCommandBuffer(m_commandBuffer);
+            m_riveRenderer.AddToCommandBuffer(m_commandBuffer);
         }
     }
 
     private void Update()
     {
-        m_renderQueue.submit();
+        m_riveRenderer.Submit();
         if (m_stateMachine != null)
         {
-            m_stateMachine.advance(Time.deltaTime);
+            m_stateMachine.Advance(Time.deltaTime);
         }
     }
 }

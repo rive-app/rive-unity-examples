@@ -1,11 +1,11 @@
 {
   "dependencies": {
     "app.rive.rive-unity": {
-      "version": "https://github.com/rive-app/rive-unity.git?path=package#v0.1.56",
+      "version": "https://github.com/rive-app/rive-unity.git?path=package#v0.1.69",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "8209f8e1f76940294ff202f2124467c043a205e7"
+      "hash": "ba61818f2a2c6afad2e615452bdf979ccac082c7"
     },
     "com.unity.burst": {
       "version": "1.8.8",
