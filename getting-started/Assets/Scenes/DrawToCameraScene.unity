@@ -322,7 +322,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ad285bd189a64c34a0779c849d09c0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  asset: {fileID: -2913039369088064392, guid: 2ad2328d822cd44028fade2425b4caa7, type: 3}
+  asset: {fileID: -4516626237390682484, guid: 2ad2328d822cd44028fade2425b4caa7, type: 3}
   cameraEvent: 20
   fit: 2
   material: {fileID: 0}

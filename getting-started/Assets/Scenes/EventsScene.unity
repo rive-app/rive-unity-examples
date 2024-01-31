@@ -229,10 +229,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ad285bd189a64c34a0779c849d09c0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  asset: {fileID: -2913039369088064392, guid: 60257cc0e60284203bb71c75ec04a3d9, type: 3}
+  asset: {fileID: -4516626237390682484, guid: 60257cc0e60284203bb71c75ec04a3d9, type: 3}
   cameraEvent: 20
   fit: 1
-  material: {fileID: 0}
+  material: {fileID: 2100000, guid: 9aec48db29b6c4d0088e46167e9cdfcb, type: 2}
 --- !u!114 &351821000
 MonoBehaviour:
   m_ObjectHideFlags: 0
