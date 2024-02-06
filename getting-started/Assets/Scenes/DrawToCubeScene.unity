@@ -221,7 +221,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae3a5c0e17cef429abc85f162df4718e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  asset: {fileID: -2913039369088064392, guid: a6b0da4fb7db94a0a80e436953e5a394, type: 3}
+  asset: {fileID: -4516626237390682484, guid: a6b0da4fb7db94a0a80e436953e5a394, type: 3}
   renderTexture: {fileID: 8400000, guid: 8bb51c3f8874742d389e3d8de5538242, type: 2}
   fit: 1
 --- !u!114 &542839206
