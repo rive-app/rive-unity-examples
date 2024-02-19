@@ -141,6 +141,7 @@ public class RiveStateMachineInputs : MonoBehaviour
 
 }
 
+#if UNITY_EDITOR
 // Creates a custom Label on the inspector.
 // This also solves this issue when exiting play mode: https://forum.unity.com/threads/nullreferenceexception-serializedobject-of-serializedproperty-has-been-disposed.1431907/
 [CustomEditor(typeof(RiveStateMachineInputs))]
@@ -155,3 +156,4 @@ public class TestOnInspector : Editor
         GUILayout.Label ("Enter Play Mode to interact with available state machine inputs");
     }
 }
+#endif
