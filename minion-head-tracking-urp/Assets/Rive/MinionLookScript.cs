@@ -33,6 +33,5 @@ public class MinionLookScript : MonoBehaviour
         float yProduct = Vector3.Dot(transform.up, directionToCamera);
         _lookHorizontalInput.Value = xProduct * xLookDamp * 100;
         _lookVerticalInput.Value = yProduct * yLookDamp * 100;
-
     }
 }

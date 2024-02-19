@@ -26,9 +26,11 @@ public class RiveFui : MonoBehaviour
 
     private void Start()
     {
-        renderTexture.enableRandomWrite = true;
+        var textureDescriptor = TextureHelper.Descriptor(0, 0);
+        renderTexture.enableRandomWrite = textureDescriptor.enableRandomWrite;
         m_renderQueue = new Rive.RenderQueue(renderTexture);
         m_riveRenderer = m_renderQueue.Renderer();
+
         if (asset != null)
         {
             m_file = Rive.File.Load(asset);

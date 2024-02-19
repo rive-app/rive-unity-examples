@@ -21,13 +21,8 @@ public class RiveTexture : MonoBehaviour
 
     private void Awake()
     {
-        _renderTexture = new RenderTexture(
-            size,
-             size,
-             0,
-             RenderTextureFormat.ARGB32
-         );
-        _renderTexture.enableRandomWrite = true;
+        var textureDescriptor = TextureHelper.Descriptor(size, size);
+        _renderTexture = new RenderTexture(textureDescriptor);
 
         UnityEngine.Renderer renderer = GetComponent<UnityEngine.Renderer>();
         Material material = renderer.material;
@@ -35,6 +30,7 @@ public class RiveTexture : MonoBehaviour
 
         m_renderQueue = new Rive.RenderQueue(_renderTexture);
         m_riveRenderer = m_renderQueue.Renderer();
+
         if (asset != null)
         {
             m_file = Rive.File.Load(asset);
@@ -46,12 +42,6 @@ public class RiveTexture : MonoBehaviour
         {
             m_riveRenderer.Align(fit, Alignment.Center, m_artboard);
             m_riveRenderer.Draw(m_artboard);
-
-            m_commandBuffer = new CommandBuffer();
-            // m_renderQueue.toCommandBuffer();
-            m_commandBuffer.SetRenderTarget(_renderTexture);
-            m_commandBuffer.ClearRenderTarget(true, true, UnityEngine.Color.clear, 0.0f);
-            m_riveRenderer.AddToCommandBuffer(m_commandBuffer);
         }
     }
 
@@ -62,5 +52,10 @@ public class RiveTexture : MonoBehaviour
         {
             m_stateMachine.Advance(Time.deltaTime);
         }
+    }
+
+    private void OnDisable()
+    {
+        _renderTexture.Release();
     }
 }
