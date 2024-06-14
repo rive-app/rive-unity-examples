@@ -32,6 +32,7 @@ public class RiveProcedural : MonoBehaviour
 
         m_commandBuffer = m_riveRenderer.ToCommandBuffer();
         m_commandBuffer.SetRenderTarget(renderTexture);
+        m_commandBuffer.ClearRenderTarget(true, true, UnityEngine.Color.clear, 0.0f);
         m_riveRenderer.AddToCommandBuffer(m_commandBuffer);
         m_camera = Camera.main;
         if (m_camera != null)
