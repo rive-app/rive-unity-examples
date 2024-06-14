@@ -6,6 +6,7 @@ using UnityEditor;
 using LoadAction = UnityEngine.Rendering.RenderBufferLoadAction;
 using StoreAction = UnityEngine.Rendering.RenderBufferStoreAction;
 using Rive;
+using UnityEngine.UIElements;
 
 public class ShipFui : MonoBehaviour
 {
@@ -85,6 +86,15 @@ public class ShipFui : MonoBehaviour
         {
             m_stateMachine.Advance(Time.deltaTime);
             // Graphics.ExecuteCommandBuffer(m_commandBuffer);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape)) 
+        {
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
     }
 
