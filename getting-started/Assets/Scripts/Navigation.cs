@@ -39,8 +39,8 @@ public class Navigation : MonoBehaviour
         }
     }
 
-    private float cooldownTime = 0.5f; // Cooldown duration in seconds
-    private float lastSceneSwitchTime = 1f;
+    private float cooldownTime = 1.00f; // Cooldown duration in seconds
+    private float lastSceneSwitchTime = 0f;
 
     void LoadSceneByIndex(int sceneIndex)
     {
