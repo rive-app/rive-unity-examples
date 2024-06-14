@@ -2,13 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI; // Used for legacy instruction text only.
 
 public class Navigation : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()
     {
-        
+        GameObject inst = GameObject.Find("CanvasInstr");
+
+        if (inst != null)
+        {
+
+            Text legacyText = GameObject.Find("Instructions").GetComponent<Text>();
+            Text legacyTextShadow = GameObject.Find("InstructionsShadow").GetComponent<Text>();
+
+            if (legacyText != null)
+                legacyText.text = m_InstructionText;
+            if (legacyTextShadow != null)
+                legacyTextShadow.text = m_InstructionText;
+        }
     }
 
     // Update is called once per frame
@@ -53,5 +66,24 @@ public class Navigation : MonoBehaviour
             lastSceneSwitchTime = Time.time;
         }
     }
+
+    public static string m_InstructionText = "ESC to quit\nNumber keys to switch scenes";
+
+    public static void DrawInstructions()
+    {
+        // Instructions
+        GUIStyle style = new GUIStyle();
+        style.fontSize = 24;
+        style.normal.textColor = UnityEngine.Color.white;
+
+        Vector2 shadowOffset = new Vector2(2, 2);
+        GUIStyle shadowStyle = new GUIStyle(style);
+        shadowStyle.normal.textColor = UnityEngine.Color.black;
+
+        GUI.Label(new Rect(10 + shadowOffset.x, 10 + shadowOffset.y, 500, 30), m_InstructionText, shadowStyle);
+        GUI.Label(new Rect(10, 10, 500, 30), m_InstructionText, style);
+    }
+
+
 
 }

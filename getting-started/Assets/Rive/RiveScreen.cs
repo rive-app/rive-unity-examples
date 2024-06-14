@@ -61,6 +61,7 @@ internal class CameraTextureHelper
 
     public bool UpdateTextureHelper()
     {
+
         if (m_pixelWidth == m_camera.pixelWidth && m_pixelHeight == m_camera.pixelHeight)
         {
             return false;
@@ -130,7 +131,10 @@ public class RiveScreen : MonoBehaviour
                 ScaleMode.StretchToFill,
                 true
             );
+
+            Navigation.DrawInstructions();
         }
+
     }
 
     private void Awake()
@@ -143,7 +147,7 @@ public class RiveScreen : MonoBehaviour
         }
 
         Camera camera = gameObject.GetComponent<Camera>();
-        Assert.IsNotNull(camera, "TestRive must be attached to a camera.");
+        Assert.IsNotNull(camera, "RiveScreen must be attached to a camera.");
 
         // Make a RenderQueue that doesn't have a backing texture and does not
         // clear the target (we'll be drawing on top of it).
@@ -169,6 +173,7 @@ public class RiveScreen : MonoBehaviour
         }
         m_riveRenderer.Align(fit, alignment ?? Alignment.Center, m_artboard);
         m_riveRenderer.Draw(m_artboard);
+        
     }
 
     private Vector2 m_lastMousePosition;
@@ -181,6 +186,7 @@ public class RiveScreen : MonoBehaviour
         {
             return;
         }
+
         Camera camera = gameObject.GetComponent<Camera>();
         if (camera != null)
         {
@@ -225,14 +231,13 @@ public class RiveScreen : MonoBehaviour
         }
 
         // Find reported Rive events before calling advance.
-        foreach (
-            var report in m_stateMachine?.ReportedEvents() ?? Enumerable.Empty<ReportedEvent>()
-        )
+        foreach (var report in m_stateMachine?.ReportedEvents() ?? Enumerable.Empty<ReportedEvent>())
         {
             OnRiveEvent?.Invoke(report);
         }
 
         m_stateMachine?.Advance(Time.deltaTime);
+
     }
 
     private void OnDisable()
@@ -242,6 +247,6 @@ public class RiveScreen : MonoBehaviour
         {
             camera.RemoveCommandBuffer(cameraEvent, m_commandBuffer);
         }
-    }
 
+    }
 }
