@@ -52,13 +52,8 @@ internal class CameraTextureHelper
 
         m_pixelWidth = m_camera.pixelWidth;
         m_pixelHeight = m_camera.pixelHeight;
-        m_renderTexture = new RenderTexture(
-            m_camera.pixelWidth,
-            m_camera.pixelHeight,
-            0,
-            RenderTextureFormat.ARGB32
-        );
-        m_renderTexture.enableRandomWrite = true;
+        var textureDescriptor = TextureHelper.Descriptor(m_pixelWidth, m_pixelHeight);
+        m_renderTexture = new RenderTexture(textureDescriptor);
         m_renderTexture.Create();
         m_renderQueue.UpdateTexture(m_renderTexture);
         return true;
@@ -131,18 +126,15 @@ public class RiveScreen : MonoBehaviour
 
         Camera camera = gameObject.GetComponent<Camera>();
         Assert.IsNotNull(camera, "TestRive must be attached to a camera.");
-        var startingTexture = new RenderTexture(
-            camera.pixelWidth,
-            camera.pixelHeight,
-            0,
-            RenderTextureFormat.ARGB32
-        );
-        startingTexture.enableRandomWrite = true;
-        m_renderQueue = new Rive.RenderQueue(startingTexture);
+
+        bool drawToScreen = Rive.RenderQueue.supportsDrawingToScreen();
+        // Make a RenderQueue that doesn't have a backing texture and does not
+        // clear the target (we'll be drawing on top of it).
+        m_renderQueue = new Rive.RenderQueue(null, false);
         m_riveRenderer = m_renderQueue.Renderer();
         m_commandBuffer = m_riveRenderer.ToCommandBuffer();
         camera.AddCommandBuffer(cameraEvent, m_commandBuffer);
-        if (!Rive.RenderQueue.supportsDrawingToScreen())
+        if (!drawToScreen)
         {
             m_helper = new CameraTextureHelper(camera, m_renderQueue);
         }
@@ -165,6 +157,7 @@ public class RiveScreen : MonoBehaviour
     private void Update()
     {
         m_helper?.update();
+
         if (m_artboard == null)
         {
             return;
