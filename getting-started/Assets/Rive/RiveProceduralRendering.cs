@@ -18,22 +18,23 @@ public class RiveProcedural : MonoBehaviour
 
     Path m_path;
     Paint m_paint;
+
     private void Start()
     {
-        m_renderQueue = new Rive.RenderQueue();
-        m_riveRenderer = m_renderQueue.Renderer();
+        m_renderQueue = new Rive.RenderQueue(renderTexture);
+
         m_path = new Path();
         m_paint = new Paint();
-        m_paint.Color = new Rive.Color(0xFFFF0000);
+        m_paint.Color = new Rive.Color(0xFFFFFFFF);
         m_paint.Style = PaintingStyle.stroke;
         m_paint.Join = StrokeJoin.round;
         m_paint.Thickness = 20.0f;
+        m_riveRenderer = m_renderQueue.Renderer();
         m_riveRenderer.Draw(m_path, m_paint);
 
         m_commandBuffer = m_riveRenderer.ToCommandBuffer();
         m_commandBuffer.SetRenderTarget(renderTexture);
-        m_commandBuffer.ClearRenderTarget(true, true, UnityEngine.Color.clear, 0.0f);
-        m_riveRenderer.AddToCommandBuffer(m_commandBuffer);
+        m_riveRenderer.AddToCommandBuffer(m_commandBuffer, true);
         m_camera = Camera.main;
         if (m_camera != null)
         {
@@ -54,11 +55,15 @@ public class RiveProcedural : MonoBehaviour
         m_path.LineTo(256 + 50 + expand, 256 + 50 + expand);
         m_path.LineTo(256 - 50 - expand, 256 + 50 + expand);
         m_path.Close();
-        m_path.Flush();
-
 
         m_paint.Thickness = (Mathf.Sin(Time.fixedTime * Mathf.PI * 2) + 1.0f) * 20.0f + 1.0f;
-        m_paint.Flush();
+
+        m_riveRenderer = m_renderQueue.Renderer();
+        m_riveRenderer.Draw(m_path, m_paint);
+
+        m_commandBuffer.Clear();
+        m_commandBuffer.SetRenderTarget(renderTexture);
+        m_riveRenderer.AddToCommandBuffer(m_commandBuffer, true);
     }
 
     private void OnDisable()
