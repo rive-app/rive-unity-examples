@@ -6,10 +6,11 @@ using Rive;
 
 //! An example implementation that showcases using the Rive Renderer to draw procedural shapes.
 
-[ExecuteInEditMode]
+//[ExecuteInEditMode]
 public class RiveProcedural : MonoBehaviour
 {
-    public RenderTexture renderTexture;
+    [SerializeField]
+    private RenderTexture m_renderTexture;
     private Rive.RenderQueue m_renderQueue;
     private Rive.Renderer m_riveRenderer;
     private CommandBuffer m_commandBuffer;
@@ -21,8 +22,23 @@ public class RiveProcedural : MonoBehaviour
 
     private void Start()
     {
-        m_renderQueue = new Rive.RenderQueue(renderTexture);
+        if (m_renderTexture == null)
+        {
+            m_renderTexture = new RenderTexture(TextureHelper.Descriptor(256, 256))
+            {
+                enableRandomWrite = (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Direct3D11)
+            };
 
+            m_renderTexture.Create();
+
+        }
+
+        UnityEngine.Renderer cubeRenderer = GetComponent<UnityEngine.Renderer>();
+        Material mat = cubeRenderer.material;
+        mat.SetTexture("_MainTex", m_renderTexture);
+
+        m_renderQueue = new Rive.RenderQueue();
+        m_riveRenderer = m_renderQueue.Renderer();
         m_path = new Path();
         m_paint = new Paint();
         m_paint.Color = new Rive.Color(0xFFFFFFFF);
@@ -33,7 +49,7 @@ public class RiveProcedural : MonoBehaviour
         m_riveRenderer.Draw(m_path, m_paint);
 
         m_commandBuffer = m_riveRenderer.ToCommandBuffer();
-        m_commandBuffer.SetRenderTarget(renderTexture);
+        m_commandBuffer.SetRenderTarget(m_renderTexture);
         m_riveRenderer.AddToCommandBuffer(m_commandBuffer, true);
         m_camera = Camera.main;
         if (m_camera != null)
@@ -62,7 +78,7 @@ public class RiveProcedural : MonoBehaviour
         m_riveRenderer.Draw(m_path, m_paint);
 
         m_commandBuffer.Clear();
-        m_commandBuffer.SetRenderTarget(renderTexture);
+        m_commandBuffer.SetRenderTarget(m_renderTexture);
         m_riveRenderer.AddToCommandBuffer(m_commandBuffer, true);
     }
 
@@ -71,6 +87,15 @@ public class RiveProcedural : MonoBehaviour
         if (m_camera != null && m_commandBuffer != null)
         {
             m_camera.RemoveCommandBuffer(CameraEvent.AfterEverything, m_commandBuffer);
+        }
+    }
+
+    void OnDestroy()
+    {
+        // Release the RenderTexture when it's no longer needed
+        if (m_renderTexture != null)
+        {
+            m_renderTexture.Release();
         }
     }
 }

@@ -132,7 +132,6 @@ public class RiveScreen : MonoBehaviour
                 true
             );
 
-            Navigation.DrawInstructions();
         }
 
     }
