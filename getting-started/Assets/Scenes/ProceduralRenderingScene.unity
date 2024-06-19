@@ -156,7 +156,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4dbc2ae095b5648418c48937a7663005, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_renderTexture: {fileID: 8400000, guid: 8766a654e19c9da42aa2d440e821f694, type: 2}
 --- !u!65 &793271255
 BoxCollider:
   m_ObjectHideFlags: 0

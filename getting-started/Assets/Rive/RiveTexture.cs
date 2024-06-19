@@ -14,7 +14,6 @@ public class RiveTexture : MonoBehaviour
     public Fit fit = Fit.contain;
     public Alignment alignment = Alignment.Center;
 
-    [SerializeField]
     private RenderTexture m_renderTexture;
     private Rive.RenderQueue m_renderQueue;
     private Rive.Renderer m_riveRenderer;

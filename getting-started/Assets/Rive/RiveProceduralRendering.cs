@@ -9,7 +9,6 @@ using Rive;
 //[ExecuteInEditMode]
 public class RiveProcedural : MonoBehaviour
 {
-    [SerializeField]
     private RenderTexture m_renderTexture;
     private Rive.RenderQueue m_renderQueue;
     private Rive.Renderer m_riveRenderer;
@@ -37,8 +36,9 @@ public class RiveProcedural : MonoBehaviour
         Material mat = cubeRenderer.material;
         mat.SetTexture("_MainTex", m_renderTexture);
 
-        m_renderQueue = new Rive.RenderQueue();
+        m_renderQueue = new Rive.RenderQueue(m_renderTexture);
         m_riveRenderer = m_renderQueue.Renderer();
+
         m_path = new Path();
         m_paint = new Paint();
         m_paint.Color = new Rive.Color(0xFFFFFFFF);
@@ -58,6 +58,10 @@ public class RiveProcedural : MonoBehaviour
         }
     }
 
+    const int triangleStart = 125;
+    const int triangleSize = 50;
+    const float growSize = 20.0f;
+
     private void Update()
     {
         if (m_path == null)
@@ -66,10 +70,10 @@ public class RiveProcedural : MonoBehaviour
         }
         m_path.Reset();
 
-        float expand = Time.fixedTime * 10;
-        m_path.MoveTo(256, 256 - 100 - expand);
-        m_path.LineTo(256 + 50 + expand, 256 + 50 + expand);
-        m_path.LineTo(256 - 50 - expand, 256 + 50 + expand);
+        float expand = (Mathf.Sin(Time.fixedTime * Mathf.PI * 2) + 1.0f) * 20.0f + 1.0f;
+        m_path.MoveTo(triangleStart, triangleStart - triangleSize - expand);
+        m_path.LineTo(triangleStart + triangleSize + expand, triangleStart + triangleSize + expand);
+        m_path.LineTo(triangleStart - triangleSize - expand, triangleStart + triangleSize + expand);
         m_path.Close();
 
         m_paint.Thickness = (Mathf.Sin(Time.fixedTime * Mathf.PI * 2) + 1.0f) * 20.0f + 1.0f;
