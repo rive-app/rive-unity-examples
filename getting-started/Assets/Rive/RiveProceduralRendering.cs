@@ -18,23 +18,33 @@ public class RiveProcedural : MonoBehaviour
 
     Path m_path;
     Paint m_paint;
+    private static bool FlipY()
+    {
+        switch (UnityEngine.SystemInfo.graphicsDeviceType)
+        {
+            case UnityEngine.Rendering.GraphicsDeviceType.Metal:
+            case UnityEngine.Rendering.GraphicsDeviceType.Direct3D11:
+                return true;
+            default:
+                return false;
+        }
+    }
 
     private void Start()
     {
-        if (m_renderTexture == null)
-        {
-            m_renderTexture = new RenderTexture(TextureHelper.Descriptor(256, 256))
-            {
-                enableRandomWrite = (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Direct3D11)
-            };
-
-            m_renderTexture.Create();
-
-        }
+        m_renderTexture = new RenderTexture(TextureHelper.Descriptor(256, 256));
+        m_renderTexture.Create();
 
         UnityEngine.Renderer cubeRenderer = GetComponent<UnityEngine.Renderer>();
         Material mat = cubeRenderer.material;
-        mat.SetTexture("_MainTex", m_renderTexture);
+        mat.mainTexture = m_renderTexture;
+
+        if (!FlipY())
+        {
+            // Flip the render texture vertically for OpenGL
+            mat.mainTextureScale = new Vector2(1, -1);
+            mat.mainTextureOffset = new Vector2(0, 1);
+        }
 
         m_renderQueue = new Rive.RenderQueue(m_renderTexture);
         m_riveRenderer = m_renderQueue.Renderer();
@@ -45,6 +55,7 @@ public class RiveProcedural : MonoBehaviour
         m_paint.Style = PaintingStyle.stroke;
         m_paint.Join = StrokeJoin.round;
         m_paint.Thickness = 20.0f;
+
         m_riveRenderer = m_renderQueue.Renderer();
         m_riveRenderer.Draw(m_path, m_paint);
 

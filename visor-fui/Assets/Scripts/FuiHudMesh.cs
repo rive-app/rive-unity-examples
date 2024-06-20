@@ -124,7 +124,9 @@ namespace Rive
             };
             Mesh.ApplyAndDisposeWritableMeshData(dataArray, mesh);
 
+#if !UNITY_EDITOR
             GetComponent<MeshFilter>().mesh = mesh;
+#endif
         }
     }
 }
