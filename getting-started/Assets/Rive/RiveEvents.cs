@@ -31,4 +31,5 @@ public class RiveEvents : MonoBehaviour
     {
         m_riveScreen.OnRiveEvent -= RiveScreen_OnRiveEvent;
     }
+
 }

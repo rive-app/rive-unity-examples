@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class FirstPersonCamera : MonoBehaviour
@@ -7,8 +8,6 @@ public class FirstPersonCamera : MonoBehaviour
     public Transform player;
     public float mouseSensitity = 2f;
     float cameraVerticalRotation = 0f;
-
-    bool lockedCursor = true;
 
     void Start()
     {
@@ -18,6 +17,15 @@ public class FirstPersonCamera : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+
         float inputX = Input.GetAxis("Mouse X") * mouseSensitity;
         float inputY = Input.GetAxis("Mouse Y") * mouseSensitity;
 

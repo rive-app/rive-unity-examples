@@ -1,3 +1,6 @@
+
+using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using Rive;
 using UnityEngine;
@@ -8,9 +11,12 @@ internal class CameraTextureHelper
 {
     private Camera m_camera;
     private RenderTexture m_renderTexture;
-    private int m_pixelWidth;
-    private int m_pixelHeight;
+    private int m_pixelWidth = -1;
+    private int m_pixelHeight = -1;
     private Rive.RenderQueue m_renderQueue;
+
+    // Queue to keep things on the main thread only.
+    private static ConcurrentQueue<Action> mainThreadActions = new ConcurrentQueue<Action>();
 
     public RenderTexture renderTexture
     {
@@ -26,15 +32,17 @@ internal class CameraTextureHelper
     {
         m_camera = camera;
         m_renderQueue = queue;
-        update();
+        UpdateTextureHelper();
     }
 
     ~CameraTextureHelper()
     {
-        cleanup();
+        // Since the GC calls the destructor and doesn't run on the main thread,
+        // we need to ensure the cleanup() call happens on the main thread.
+        mainThreadActions.Enqueue(() => Cleanup());
     }
 
-    void cleanup()
+    void Cleanup()
     {
         if (m_renderTexture != null)
         {
@@ -42,27 +50,35 @@ internal class CameraTextureHelper
         }
     }
 
-    public bool update()
+    private void Update()
     {
+        // Process main thread actions
+        while (mainThreadActions.TryDequeue(out var action))
+        {
+            action();
+        }
+    }
+
+    public bool UpdateTextureHelper()
+    {
+
         if (m_pixelWidth == m_camera.pixelWidth && m_pixelHeight == m_camera.pixelHeight)
         {
             return false;
         }
-        cleanup();
+        
+        Cleanup();
 
         m_pixelWidth = m_camera.pixelWidth;
         m_pixelHeight = m_camera.pixelHeight;
-        m_renderTexture = new RenderTexture(
-            m_camera.pixelWidth,
-            m_camera.pixelHeight,
-            0,
-            RenderTextureFormat.ARGB32
-        );
-        m_renderTexture.enableRandomWrite = true;
+        var textureDescriptor = TextureHelper.Descriptor(m_pixelWidth, m_pixelHeight);
+        m_renderTexture = new RenderTexture(textureDescriptor);
         m_renderTexture.Create();
         m_renderQueue.UpdateTexture(m_renderTexture);
+
         return true;
     }
+
 }
 
 [ExecuteInEditMode]
@@ -85,8 +101,6 @@ public class RiveScreen : MonoBehaviour
     private Artboard m_artboard;
     private StateMachine m_stateMachine;
     private CameraTextureHelper m_helper;
-
-    public Material material;
 
     public StateMachine stateMachine => m_stateMachine;
 
@@ -117,7 +131,9 @@ public class RiveScreen : MonoBehaviour
                 ScaleMode.StretchToFill,
                 true
             );
+
         }
+
     }
 
     private void Awake()
@@ -130,22 +146,21 @@ public class RiveScreen : MonoBehaviour
         }
 
         Camera camera = gameObject.GetComponent<Camera>();
-        Assert.IsNotNull(camera, "TestRive must be attached to a camera.");
-        var startingTexture = new RenderTexture(
-            camera.pixelWidth,
-            camera.pixelHeight,
-            0,
-            RenderTextureFormat.ARGB32
-        );
-        startingTexture.enableRandomWrite = true;
-        m_renderQueue = new Rive.RenderQueue(startingTexture);
+        Assert.IsNotNull(camera, "RiveScreen must be attached to a camera.");
+
+        // Make a RenderQueue that doesn't have a backing texture and does not
+        // clear the target (we'll be drawing on top of it).
+        m_renderQueue = new Rive.RenderQueue(null, false);
         m_riveRenderer = m_renderQueue.Renderer();
         m_commandBuffer = m_riveRenderer.ToCommandBuffer();
-        camera.AddCommandBuffer(cameraEvent, m_commandBuffer);
+
         if (!Rive.RenderQueue.supportsDrawingToScreen())
         {
             m_helper = new CameraTextureHelper(camera, m_renderQueue);
+            m_commandBuffer.SetRenderTarget(m_helper.renderTexture);
         }
+        camera.AddCommandBuffer(cameraEvent, m_commandBuffer);
+
         DrawRive(m_renderQueue);
     }
 
@@ -157,6 +172,7 @@ public class RiveScreen : MonoBehaviour
         }
         m_riveRenderer.Align(fit, alignment ?? Alignment.Center, m_artboard);
         m_riveRenderer.Draw(m_artboard);
+        
     }
 
     private Vector2 m_lastMousePosition;
@@ -164,11 +180,12 @@ public class RiveScreen : MonoBehaviour
 
     private void Update()
     {
-        m_helper?.update();
+        m_helper?.UpdateTextureHelper();
         if (m_artboard == null)
         {
             return;
         }
+
         Camera camera = gameObject.GetComponent<Camera>();
         if (camera != null)
         {
@@ -213,14 +230,13 @@ public class RiveScreen : MonoBehaviour
         }
 
         // Find reported Rive events before calling advance.
-        foreach (
-            var report in m_stateMachine?.ReportedEvents() ?? Enumerable.Empty<ReportedEvent>()
-        )
+        foreach (var report in m_stateMachine?.ReportedEvents() ?? Enumerable.Empty<ReportedEvent>())
         {
             OnRiveEvent?.Invoke(report);
         }
 
         m_stateMachine?.Advance(Time.deltaTime);
+
     }
 
     private void OnDisable()
@@ -230,5 +246,6 @@ public class RiveScreen : MonoBehaviour
         {
             camera.RemoveCommandBuffer(cameraEvent, m_commandBuffer);
         }
+
     }
 }
