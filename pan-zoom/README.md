@@ -1,24 +1,22 @@
 ## Introduction
 
-This project contains functions that enable pan and pinch to zoom from within the Rive file. This way you can zoom in without losing quality. 
+This project contains functions that enable pan and zoom from within the Rive file. This way you can zoom in without losing quality. 
 
 A modified version of RiveScreen.cs is provided which also prevents button click during panning/zooming and will prevent panning/zooming during button click.
 
 Currently only a screen overly mode is supported which draws one artboard over the entire screen. If you need to draw the artboard in a frame, additional coordinate mapping is required.
 
-This project uses the new Unity Input system and works both with a mouse, track pad, and touch screen. In order to integrate this into your own project, you have to follow a specific workflow, described below.
+The logic will not allow panning or zooming outside of the artboard boundaries, so you need to zoom in before panning is possible.
 
-The logic will not allow panning or zooming outside of the artboard boundaries, so you need to zoom in before pan is possible.
+This project uses the new Unity Input system and works both with a mouse, track pad, touch screen, and a pen/stylus. In order to integrate this into your own project, you have to follow a specific workflow, described below.
 
 ## New project workflow
 
 The workflow is somewhat complex. The rev file is provided, which will help figuring out how to set it up.
 
 -In the Unity project settings, set the Active Input Handling to the New input system.
-
--Add the **Touch** folder to the project. This is used for touch input mapping.
 	
--Put all the graphic items you want to be use for pan/zoom into a group called "origin". Set the origin position to Rive coordinates 0,0
+-Put all the graphic items you want to be used for pan/zoom into a group called "origin". Set the origin position to Rive coordinates 0,0
 
 ![Alt text](readme-png/origin%20coordinate.png?raw=true)
 
@@ -30,7 +28,7 @@ The workflow is somewhat complex. The rev file is provided, which will help figu
 
 ![Alt text](readme-png/inputs.png?raw=true)
 
--Set the "pan x" and "pan y" number inputs to a value of 50. set the "scale" input to 0. These numbers are timeline movement percentages. So 50 means the timeline is in the middle and 0 means the timeline is all the way to the left.
+-Set the "pan x" and "pan y" number inputs to a value of 50 and set the "scale" input to 0. These numbers are timeline movement percentages. So 50 means the timeline is in the middle, 0 means the timeline is all the way to the left, and 100 means the timeline is all the way to the right.
 
 -Create joysticks with the following names:
 
@@ -62,7 +60,7 @@ The workflow is somewhat complex. The rev file is provided, which will help figu
 
 ![Alt text](readme-png/scale%20changed%20condition%202.png?raw=true)
 
-The empty timeline in the state machine is used for performance reasons. The blend state should only run if panning or zooming is in progress, otherwise it will use resources all the time.
+-The empty timeline in the state machine is used for performance reasons. The blend state should only run if panning or zooming is in progress, otherwise it will use resources all the time.
 
 -Select the blend state, click the + button next to "Timelines" and select "Mix by Value". On the drop down box, select "scale joy 1". Leave the corresponding number to 100.
 

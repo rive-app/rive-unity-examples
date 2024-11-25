@@ -1,13 +1,24 @@
-﻿using Rive;
-using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.InputSystem;
+using Rive;
+
+/*
+A Samsung pen registers both as a finger touch and a pen device. All of these are engaged if a Samsung pen is on screen:
+controls.Movement.Touch0.started
+controls.Movement.Pen.started 
+Pen.current.tip.isPressed
+
+To prevent double events, this has to be filtered in code.
+
+An Apple pen only registers only as a pen device and no touch related code is triggered.
+*/
 
 
 public class PanZoom: MonoBehaviour {
 
     //To prevent a button press during panning and zooming, and to prevent panning during a button press,
     //a threshold value is used.
-    private float panScaleThresholdRive = 2f;
+    private float panScaleThresholdRive = 20f;
 
     //This must be the maximum zoom set in the timeline when the timeline is at 100%.
     //The smallest zoom at timeline 0% is assumed to be 100% zoom.
@@ -22,20 +33,16 @@ public class PanZoom: MonoBehaviour {
     private float scaleTimelineScrollChange = 5.55555556f;
 
     private bool isZoomIn = false;
-    private bool firstTouch = true;
 
-    private Vector2 startTouchPositionRive;
+    private Vector2 startPrimaryFingerPosRive;
     private Vector2 panTimelineStart;
     private float startTouchDistanceRive;
     private float scaleTimelineStart = 0;
     private Vector2 startMidPosRive;
 
-    private TouchControls controls;
+    private RiveScreenMod m_riveScreen;
 
-    private Coroutine mouseZoomCoroutine;
-    private Coroutine mouseMoveCoroutine;
-    private Coroutine pinchZoomCoroutine;
-    private Coroutine fingerPanCoroutine;
+    private int activeTouchCountPrev;
 
     private float scaleTimeline = 0f;
     private float scalePrev = 0f;
@@ -54,37 +61,16 @@ public class PanZoom: MonoBehaviour {
 
     private bool forceUpdate = false;
 
-    private void Awake() {
-
-        controls = new TouchControls();
-    }
-
-
-    private void OnEnable() {
-
-        controls.Enable();
-    }
-
-    private void OnDisable() {
-
-        controls.Disable();
-    }
-
     void Start() {
 
         riveScreenMod = gameObject.GetComponent<RiveScreenMod>();
+        m_riveScreen = gameObject.GetComponent<RiveScreenMod>();
 
-        controls.Movement.Touch0.started += _ => FingerPanStart();
-        controls.Movement.Touch0.canceled += _ => FingerPanStop();
+        //The timeline zoom is not a zoom percentage but a percentage of the timeline range.
+        //The range is from 0 to 100, which equates to 100% zoom to 1000% zoom, or whatever the zoom is set to in the timeline.
+        scaleTimeline = 0;
 
-        controls.Movement.Touch1.started += _ => PinchZoomStart();
-        controls.Movement.Touch1.canceled += _ => PinchZoomStop();
-
-        controls.Movement.MouseScrollPosition.started += _ => MouseZoomStart();
-        controls.Movement.MouseScrollPosition.canceled += _ => MouseZoomEnd();
-
-        controls.Movement.MouseLeftClickMovePosition.started += _ => MouseLeftClickMoveStart();
-        controls.Movement.MouseLeftClickMovePosition.canceled += _ => MouseLeftClickMoveEnd();
+        panTimeline = new Vector2(50f, 50f);
 
         //The panning range set in Rive (via a timeline) must be large enough to fit the zoom range. 
         //This function will give the pan range required.
@@ -98,6 +84,8 @@ public class PanZoom: MonoBehaviour {
 
         if ( scaleRef != null ) {
 
+            forceUpdate = true;
+
             //Pan and scale
             scalePrev = SetScale(scaleTimeline, scalePrev);
             panXPercentPrev = SetPanXPercent(panTimeline.x, panXPercentPrev);
@@ -105,242 +93,102 @@ public class PanZoom: MonoBehaviour {
         }
     }
 
-    //Initializing Rive references.
-    void Init() {
+    public void PanZoomLogic(int activeTouchCount, Vector2 primaryFingerPosUnity, Vector2 secondaryFingerPosUnity, Vector2 primaryFingerPosRive, Vector2 secondaryFingerPosRive) {
 
-        if  ((riveScreenMod.m_stateMachine != null ) && ( scaleRef == null )) {
+        //Pan start
+        if ( (activeTouchCount == 1) && ((activeTouchCountPrev == 0) || (activeTouchCountPrev > 1)) ) {
 
-            scaleChangedRef =  riveScreenMod.m_stateMachine.GetBool("scale changed");
-            panXPercentChangedRef =  riveScreenMod.m_stateMachine.GetBool("pan x changed");
-            panYPercentChangedRef =  riveScreenMod.m_stateMachine.GetBool("pan y changed");
-
-            scaleRef =  riveScreenMod.m_stateMachine.GetNumber("scale");
-            panXPercentRef =  riveScreenMod.m_stateMachine.GetNumber("pan x");
-            panYPercentRef =  riveScreenMod.m_stateMachine.GetNumber("pan y");
+            panTimelineStart = panTimeline;
+            scaleTimelineStart = scaleTimeline;
+            startPrimaryFingerPosRive = primaryFingerPosRive;
         }
-    }
 
-    private void MouseZoomStart() {
+        //Panning
+        if ( activeTouchCount == 1 ) {
 
-        panTimelineStart = panTimeline;
-        scaleTimelineStart = scaleTimeline;
-
-        Vector2 mousePosUnity = riveScreenMod.GetMousePosUnity(out int activeTouchCount);
-        startTouchPositionRive =  riveScreenMod.UnityToRivePos(mousePosUnity);
-
-        mouseZoomCoroutine = StartCoroutine(MouseZoomDetection());
-    }
-
-    private void MouseZoomEnd() {
-
-        if ( mouseZoomCoroutine != null ) {
-
-            StopCoroutine(mouseZoomCoroutine);
+            Pan(ref  panTimeline, primaryFingerPosRive, startPrimaryFingerPosRive, panTimelineStart,  scaleTimeline);
         }
-    }
 
-    IEnumerator MouseZoomDetection() {
+        //Zoom start
+        if ( (activeTouchCount == 2) && ((activeTouchCountPrev < 2) || (activeTouchCountPrev > 2)) ) {
 
-        while ( true ) {
+            panTimelineStart =  panTimeline;
+            scaleTimelineStart =  scaleTimeline;
+            startTouchDistanceRive = Vector2.Distance(primaryFingerPosRive, secondaryFingerPosRive);
 
-            Vector2 scrollWheel = controls.Movement.MouseScrollPosition.ReadValue<Vector2>();
+            // Compute the midpoint between the two fingers
+            Vector2 unityFingerMid = (primaryFingerPosUnity + secondaryFingerPosUnity) / 2f;
+            startMidPosRive = m_riveScreen.UnityToRivePos(unityFingerMid);
 
-            isZoomIn = scrollWheel.y > 0;
-            float scaleAddition = isZoomIn ? scaleTimelineScrollChange : -scaleTimelineScrollChange;
-
-            float newScaleTimeline = scaleTimeline + scaleAddition;
-            newScaleTimeline = Mathf.Clamp(newScaleTimeline, 0f, 100f);
-
-            scaleTimeline = newScaleTimeline;
-
-            Vector2 mousePosUnity = riveScreenMod.GetMousePosUnity(out int activeTouchCount);
-            Vector2 currentTouchPositionRive = riveScreenMod.UnityToRivePos(mousePosUnity);
-
-            // Adjust pan to keep zoom centered at mouse position
-            KeepZoomCenter(ref  panTimeline, currentTouchPositionRive, currentTouchPositionRive, scaleTimelineStart, newScaleTimeline, panTimelineStart,  scaleTimeline);
-
-            yield return null;
+            m_riveScreen.isPanOrZoom = true;
         }
-    }
 
-    void MouseLeftClickMoveStart() {
+        //Zooming
+        if ( activeTouchCount == 2 ) {
 
-        panTimelineStart =  panTimeline;
-        scaleTimelineStart =  scaleTimeline;
-
-        Vector2 mousePosUnity = riveScreenMod.GetMousePosUnity(out int activeTouchCount);
-        startTouchPositionRive = riveScreenMod.UnityToRivePos(mousePosUnity);
-
-        mouseMoveCoroutine = StartCoroutine(MouseLeftClickMoveDetection());
-    }
-
-    void MouseLeftClickMoveEnd() {
-
-        if ( mouseMoveCoroutine != null ) {
-
-            StopCoroutine(mouseMoveCoroutine);
+            Zoom(primaryFingerPosRive, secondaryFingerPosRive, primaryFingerPosUnity, secondaryFingerPosUnity);
         }
+
+        //Mouse zooming
+        MouseZoom(primaryFingerPosRive);
+
+        activeTouchCountPrev = activeTouchCount;
     }
 
-    IEnumerator MouseLeftClickMoveDetection() {
 
-        while ( true ) {
 
-            Vector2 mousePosUnity = riveScreenMod.GetMousePosUnity(out int activeTouchCount);
-            Vector2 currentTouchPositionRive = riveScreenMod.UnityToRivePos(mousePosUnity);
+    void MouseZoom(Vector2 primaryFingerPosRive) {
 
-            RivePan(ref  panTimeline, currentTouchPositionRive, startTouchPositionRive, panTimelineStart,  scaleTimeline);
+        float scrollWheel = 0f;
 
-            yield return null;
+        if ( Mouse.current != null ) {
+
+            scrollWheel = Mouse.current.scroll.ReadValue().y;
         }
-    }
 
-    private void FingerPanStart() {
-
-        //Due to a bug in Unity, the first touch is always at 0,0. Waiting for the end of frame will fix that.
-        if ( firstTouch ) {
-
-            firstTouch = false;
-            StartCoroutine(FirstTouchWait());
-
-        } else {
+        if ( scrollWheel != 0 ) {
 
             panTimelineStart =  panTimeline;
             scaleTimelineStart =  scaleTimeline;
 
-            Vector2 mousePosUnity = riveScreenMod.GetMousePosUnity(out int activeTouchCount);
-            startTouchPositionRive = riveScreenMod.UnityToRivePos(mousePosUnity);
+            isZoomIn = scrollWheel > 0;
+            float scaleAddition = isZoomIn ? scaleTimelineScrollChange : -scaleTimelineScrollChange;
 
-            fingerPanCoroutine = StartCoroutine(FingerPanDetection());
+            float newScaleTimeline =  scaleTimeline + scaleAddition;
+            newScaleTimeline = Mathf.Clamp(newScaleTimeline, 0f, 100f);
+
+            scaleTimeline = newScaleTimeline;
+
+            // Adjust pan to keep zoom centered at mouse position
+            KeepZoomCenter(ref panTimeline, primaryFingerPosRive, primaryFingerPosRive, scaleTimelineStart, newScaleTimeline, panTimelineStart,  scaleTimeline);
         }
     }
 
-    private void FingerPanStop() {
+    private void Zoom(Vector2 primaryFingerPosRive, Vector2 secondaryFingerPosRive, Vector2 primaryFingerPosUnity, Vector2 secondaryFingerPosUnity) {
 
-        if ( fingerPanCoroutine != null ) {
+        float newTouchDistanceRive = Vector2.Distance(primaryFingerPosRive, secondaryFingerPosRive);
 
-            StopCoroutine(fingerPanCoroutine);
-        }
-    }
-
-    IEnumerator FirstTouchWait() {
-
-        yield return new WaitForEndOfFrame();
-
-        FingerPanStart();
-    }
-
-    IEnumerator FingerPanDetection() {
-
-        while ( true ) {
-
-            Vector2 mousePosUnity = riveScreenMod.GetMousePosUnity(out int activeTouchCount);
-
-            if ( activeTouchCount > 1 ) {
-
-                FingerPanStop();
-                PinchZoomStart();
-
-                break;
-            }
-
-            if ( activeTouchCount == 0 ) {
-
-                FingerPanStop();
-
-                break;
-            }
-
-            Vector2 currentTouchPositionRive = riveScreenMod.UnityToRivePos(mousePosUnity);
-
-            RivePan(ref  panTimeline, currentTouchPositionRive, startTouchPositionRive, panTimelineStart,  scaleTimeline);
-
-            yield return null;
-        }
-    }
-
-    private void PinchZoomStart() {
-
-        panTimelineStart =  panTimeline;
-        scaleTimelineStart =  scaleTimeline;
-
-        Vector2 primaryFingerPosUnity = controls.Movement.PrimaryFingerPosition.ReadValue<Vector2>();
-        Vector2 secondaryFingerPosUnity = controls.Movement.SecondaryFingerPosition.ReadValue<Vector2>();
-
-        Vector2 primaryFingerPosRive = riveScreenMod.UnityToRivePos(primaryFingerPosUnity);
-        Vector2 secondaryFingerPosRive = riveScreenMod.UnityToRivePos(secondaryFingerPosUnity);
-
-        startTouchDistanceRive = Vector2.Distance(primaryFingerPosRive, secondaryFingerPosRive);
+         scaleTimeline = GetScale(newTouchDistanceRive, startTouchDistanceRive, scaleTimelineStart);
 
         // Compute the midpoint between the two fingers
         Vector2 unityFingerMid = (primaryFingerPosUnity + secondaryFingerPosUnity) / 2f;
-        startMidPosRive = riveScreenMod.UnityToRivePos(unityFingerMid);
+        Vector2 currentMidPosRive = m_riveScreen.UnityToRivePos(unityFingerMid);
 
-        pinchZoomCoroutine = StartCoroutine(PinchZoomDetection());
-
-        riveScreenMod.isPanOrZoom = true;
+        // Adjust pan to keep zoom centered at midpoint
+        KeepZoomCenter(ref  panTimeline, currentMidPosRive, startMidPosRive, scaleTimelineStart,  scaleTimeline, panTimelineStart,  scaleTimeline);
     }
 
-    private void PinchZoomStop() {
-
-        if ( pinchZoomCoroutine != null ) {
-
-            StopCoroutine(pinchZoomCoroutine);
-        }
-    }
-
-    IEnumerator PinchZoomDetection() {
-
-        while ( true ) {
-
-            riveScreenMod.GetMousePosUnity(out int activeTouchCount);
-
-            if ( activeTouchCount == 1 ) {
-
-                PinchZoomStop();
-                FingerPanStart();
-
-                break;
-            }
-
-            if ( activeTouchCount == 0 ) {
-
-                PinchZoomStop();
-
-                break;
-            }
-
-            Vector2 primaryFingerPosUnity = controls.Movement.PrimaryFingerPosition.ReadValue<Vector2>();
-            Vector2 secondaryFingerPosUnity = controls.Movement.SecondaryFingerPosition.ReadValue<Vector2>();
-
-            Vector2 primaryFingerPosRive = riveScreenMod.UnityToRivePos(primaryFingerPosUnity);
-            Vector2 secondaryFingerPosRive = riveScreenMod.UnityToRivePos(secondaryFingerPosUnity);
-            float newTouchDistanceRive = Vector2.Distance(primaryFingerPosRive, secondaryFingerPosRive);
-
-            scaleTimeline = GetScale(newTouchDistanceRive, startTouchDistanceRive, scaleTimelineStart);
-
-            // Compute the midpoint between the two fingers
-            Vector2 unityFingerMid = (primaryFingerPosUnity + secondaryFingerPosUnity) / 2f;
-            Vector2 currentMidPosRive = riveScreenMod.UnityToRivePos(unityFingerMid);
-
-            // Adjust pan to keep zoom centered at midpoint
-            KeepZoomCenter(ref  panTimeline, currentMidPosRive, startMidPosRive, scaleTimelineStart,  scaleTimeline, panTimelineStart,  scaleTimeline);
-
-            yield return null;
-        }
-    }
-
-    private void RivePan(ref Vector2 panTimeline, Vector2 currentTouchPositionRive, Vector2 startTouchPositionRive, Vector2 panTimelineStart, float scaleTimeline) {
+    private void Pan(ref Vector2 panTimeline, Vector2 primaryFingerPosRive, Vector2 startPrimaryFingerPosRive, Vector2 panTimelineStart, float scaleTimeline) {
 
         //Get a vector between the initial touch position and the current touch position. 
-        Vector2 rivePixelDifference = startTouchPositionRive - currentTouchPositionRive;
+        Vector2 rivePixelDifference = startPrimaryFingerPosRive - primaryFingerPosRive;
 
-        if ( (Vector2.Distance(currentTouchPositionRive, startTouchPositionRive) > panScaleThresholdRive) || riveScreenMod.isPanOrZoom ) {
+        if ( (Vector2.Distance(primaryFingerPosRive, startPrimaryFingerPosRive) > panScaleThresholdRive) || m_riveScreen.isPanOrZoom ) {
 
-            riveScreenMod.isPanOrZoom = true;
+            m_riveScreen.isPanOrZoom = true;
 
             //Flip y depending the platform.
-            rivePixelDifference.y = riveScreenMod.IsDeviceTypeOpenGL() || riveScreenMod.FlipY() ? rivePixelDifference.y : -rivePixelDifference.y;
+            rivePixelDifference.y = m_riveScreen.IsDeviceTypeOpenGL() || m_riveScreen.FlipY() ? rivePixelDifference.y : -rivePixelDifference.y;
 
             //Convert from a timeline percentage to Rive pixels.
             Vector2 startRivePanPixels = LinearFull(panTimelineStart, 0f, -maxPanRive, 100f, maxPanRive);
@@ -374,7 +222,7 @@ public class PanZoom: MonoBehaviour {
         rivePixelDifference -= twoFingerPanOffset;
 
         //Flip y depending the platform.
-        rivePixelDifference.y = riveScreenMod.IsDeviceTypeOpenGL() || riveScreenMod.FlipY() ? rivePixelDifference.y : -rivePixelDifference.y;
+        rivePixelDifference.y = m_riveScreen.IsDeviceTypeOpenGL() || m_riveScreen.FlipY() ? rivePixelDifference.y : -rivePixelDifference.y;
 
         //Convert from Rive pixel change to a timeline percentage change.
         Vector2 panTimelineDiff = (rivePixelDifference * 50f) / maxPanRive;
@@ -390,7 +238,7 @@ public class PanZoom: MonoBehaviour {
         //Convert from a timeline percentage (range 0 to 100) to an actual zoom value (range 100 to 1000).
         float riveScalePercent = LinearFull(scaleTimeline, 0f, 100f, 100f, maxScaleRive);
 
-        Vector2 artboardPixelSize = new Vector2(riveScreenMod.m_artboard.Width, riveScreenMod.m_artboard.Height);
+        Vector2 artboardPixelSize = new Vector2(m_riveScreen.m_artboard.Width, m_riveScreen.m_artboard.Height);
 
         //Adjust the artboard size for the scale.
         Vector2 maxScalePosShift = artboardPixelSize * (riveScalePercent / 100f);
@@ -430,16 +278,31 @@ public class PanZoom: MonoBehaviour {
         return new Vector2(x, y);
     }
 
-    private float GetPanRangeRequired(float maxScale){
+    private float GetPanRangeRequired(float maxScale) {
 
         //Find the highest number
-        float maxArtboardSize = Mathf.Max(riveScreenMod.m_artboard.Width, riveScreenMod.m_artboard.Height);
+        float maxArtboardSize = Mathf.Max(m_riveScreen.m_artboard.Width, m_riveScreen.m_artboard.Height);
 
         float translated = maxArtboardSize * (maxScale / 100f);
 
         float panRangeRequired = translated - maxArtboardSize;
 
         return panRangeRequired;
+    }
+
+            //Initializing Rive references.
+    void Init() {
+
+        if  ((riveScreenMod.m_stateMachine != null ) && ( scaleRef == null )) {
+
+            scaleChangedRef =  riveScreenMod.m_stateMachine.GetBool("scale changed");
+            panXPercentChangedRef =  riveScreenMod.m_stateMachine.GetBool("pan x changed");
+            panYPercentChangedRef =  riveScreenMod.m_stateMachine.GetBool("pan y changed");
+
+            scaleRef =  riveScreenMod.m_stateMachine.GetNumber("scale");
+            panXPercentRef =  riveScreenMod.m_stateMachine.GetNumber("pan x");
+            panYPercentRef =  riveScreenMod.m_stateMachine.GetNumber("pan y");
+        }
     }
 
     private float SetScale(float timelinePercent, float previous) {
@@ -487,6 +350,9 @@ public class PanZoom: MonoBehaviour {
         return percent;
     }
 
+
+
+
     //Get y from a linear function, with x as an input. The linear function goes through points
     //Pxy on the left ,and Qxy on the right.
     public static float LinearFull(float x, float Px, float Py, float Qx, float Qy) {
@@ -518,3 +384,5 @@ public class PanZoom: MonoBehaviour {
         return y;
     }
 }
+
+

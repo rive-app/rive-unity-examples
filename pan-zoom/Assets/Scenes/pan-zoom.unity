@@ -229,10 +229,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9450942ae1551124ca199daed030e100, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stateMachineName: 
   asset: {fileID: -4516626237390682484, guid: 07fdbecea4bbb0c4c9494041a7c98697, type: 3}
-  cameraEvent: 18
+  cameraEvent: 20
   fit: 1
+  scaleFactor: 1
+  scalingMode: 1
+  fallbackDPI: 96
+  m_referenceDPI: 150
+  aspectRatio: 0
   material: {fileID: 0}
   isPanOrZoom: 0
   unityPixelWidth: 0
