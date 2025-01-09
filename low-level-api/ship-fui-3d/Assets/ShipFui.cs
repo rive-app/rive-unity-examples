@@ -12,7 +12,7 @@ public class ShipFui : MonoBehaviour
 {
     public Rive.Asset asset;
     private RenderTexture m_renderTexture;
-    public Fit fit = Fit.contain;
+    public Fit fit = Fit.Contain;
     public Alignment alignment = Alignment.Center;
 
     private Rive.RenderQueue m_renderQueue;
@@ -124,7 +124,7 @@ public class ShipFui : MonoBehaviour
             // Graphics.ExecuteCommandBuffer(m_commandBuffer);
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape)) 
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
 #if UNITY_EDITOR
             EditorApplication.isPlaying = false;
