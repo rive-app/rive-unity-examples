@@ -218,7 +218,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1409528260930510967, guid: 82a35efd7845342bcb6866acce8df7fe, type: 3}
       propertyPath: m_textToDisplay
-      value: Select the 'Rive Widget - Rewards '  Game Object to configure values
+      value: Select the 'Rive Widget - Rewards '  Game Object (under Canvas > Rive
+        Panel) to configure values
       objectReference: {fileID: 0}
     - target: {fileID: 1577821602560208071, guid: 82a35efd7845342bcb6866acce8df7fe, type: 3}
       propertyPath: m_Name

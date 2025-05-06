@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "app.rive.rive-unity": "https://github.com/rive-app/rive-unity.git?path=package#v0.3.2",
+    "app.rive.rive-unity": "https://github.com/rive-app/rive-unity.git?path=package#v0.3.6",
     "com.unity.cinemachine": "2.10.3",
     "com.unity.collab-proxy": "2.6.0",
     "com.unity.ide.rider": "3.0.28",
@@ -11,6 +11,7 @@
     "com.unity.test-framework": "1.1.33",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.timeline": "1.7.6",
+    "com.unity.toolchain.macos-arm64-linux-x86_64": "2.0.4",
     "com.unity.ugui": "1.0.0",
     "com.unity.visualscripting": "1.9.4",
     "com.unity.modules.ai": "1.0.0",
