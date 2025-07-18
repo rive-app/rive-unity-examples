@@ -22,7 +22,8 @@ public class TextOverlayController : MonoBehaviour
 
 
     [SerializeField] private RiveWidget m_riveWidget;
-
+    [Tooltip("The text to display in the overlay")]
+    [TextArea]
     [SerializeField] private string m_textToDisplay = "Hello, World!";
 
     [SerializeField] private int m_fontSize = 20;

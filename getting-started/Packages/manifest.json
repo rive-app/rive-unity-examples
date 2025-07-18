@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "app.rive.rive-unity": "https://github.com/rive-app/rive-unity.git?path=package#v0.3.6",
+    "app.rive.rive-unity": "https://github.com/rive-app/rive-unity.git?path=package#v0.3.7-canary.150",
     "com.unity.ai.navigation": "2.0.6",
     "com.unity.collab-proxy": "2.7.1",
     "com.unity.ide.rider": "3.0.31",
