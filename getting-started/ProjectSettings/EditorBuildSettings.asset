@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Demos/ImageDataBinding/ImageDatabindingScene.unity
+    guid: 96308012bff1240b1bbcc3f5789379f8
+  - enabled: 1
+    path: Assets/Demos/ArtboardDatabinding/ArtboardDatabindingScene.unity
+    guid: de3e1b11f62b2474ead77b4973097e42
+  - enabled: 1
     path: Assets/Scenes/RewardsDataBinding.unity
     guid: 5571b3bdc867c4b01a7bba6393ffeb68
   - enabled: 1

@@ -11,7 +11,7 @@ public class ArtboardDatabindingController : MonoBehaviour
     private const string DEFAULT_WEBPACK_ICON = "download";
     #endregion
 
-    #region Serialized Fields
+    #region Inspector Fields
     [Header("Rive Components")]
     [SerializeField] private RiveWidget m_riveWidget;
     [SerializeField] private Asset m_webPackRiveAsset;
@@ -21,7 +21,6 @@ public class ArtboardDatabindingController : MonoBehaviour
     [SerializeField] private TMPro.TMP_Dropdown m_webPackIconDropdown;
     #endregion
 
-    #region Private Fields
     // Rive file references
     private File m_webPackFile;
     private ViewModelInstanceArtboardProperty m_mainArtboardIconProperty;
@@ -44,7 +43,6 @@ public class ArtboardDatabindingController : MonoBehaviour
     {
         "download", "refresh", "lock", "wifi", "email", "www"
     };
-    #endregion
 
     #region Unity Lifecycle
     private void OnEnable()
