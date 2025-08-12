@@ -12,6 +12,9 @@ EditorBuildSettings:
     path: Assets/Demos/ArtboardDatabinding/ArtboardDatabindingScene.unity
     guid: de3e1b11f62b2474ead77b4973097e42
   - enabled: 1
+    path: Assets/Demos/ListDatabinding/ListDatabindingScene.unity
+    guid: 4fb74e70624a94882b112114ad18e3ac
+  - enabled: 1
     path: Assets/Scenes/RewardsDataBinding.unity
     guid: 5571b3bdc867c4b01a7bba6393ffeb68
   - enabled: 1

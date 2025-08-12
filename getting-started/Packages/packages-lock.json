@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "app.rive.rive-unity": {
-      "version": "https://github.com/rive-app/rive-unity.git?path=package#v0.3.7-canary.150",
+      "version": "https://github.com/rive-app/rive-unity.git?path=package#v0.3.7",
       "depth": 0,
       "source": "git",
       "dependencies": {},
