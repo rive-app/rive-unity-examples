@@ -8,7 +8,7 @@
 A Unity runtime library for [Rive](https://rive.app).
 
 > [!NOTE]  
-> The Rive Unity runtime is currently in **Technical Review**. During this stage the API could change. While it's ready for testing and your feedback is highly valued during this phase, we advise exercising caution before considering it for production builds. Log an issue in our [issues](https://github.com/rive-app/rive-unity/issues) or reach out to us on [Discord](https://discord.com/invite/FGjmaTr) or through our [Support Channel](https://rive.atlassian.net/servicedesk/customer/portals).
+> The Rive Unity runtime is currently in **Technical Review**. During this stage the API could change. While it's ready for testing and your feedback is highly valued during this phase, we advise exercising caution before considering it for production builds. Log an issue in our [issues](https://github.com/rive-app/rive-unity/issues) or reach out to us on [Discord](https://discord.gg/rive-app) or through our [Support Channel](https://rive.atlassian.net/servicedesk/customer/portals).
 
 ## Table of contents
 
